@@ -36,27 +36,49 @@ async function drawImage(callback, data) {
 	const receive = async function (evt) {
 		const message = JSON.parse(evt.data);
 
-		if (message.event === 'init') {
-			iframe.contentWindow.postMessage(JSON.stringify({
-				action: 'load',
-				autosave: 0,
-				xml: data || '',
-			}), 'https://embed.diagrams.net');
-		} else if (message.event === 'export') {
-			await save(message.data);
-		} else if (message.event === 'save') {
-			iframe.contentWindow.postMessage(JSON.stringify({
-				spin: 'Saving',
-				action: 'export',
-				format: 'xmlpng',
-				xml: message.xml,
-			}), 'https://embed.diagrams.net');
-		} else if (message.event === 'load') {
+		switch (message.event) {
+			case 'init': {
+				iframe.contentWindow.postMessage(JSON.stringify({
+					action: 'load',
+					autosave: 0,
+					xml: data || '',
+				}), 'https://embed.diagrams.net');
+
+				break;
+			}
+
+			case 'export': {
+				await save(message.data);
+
+				break;
+			}
+
+			case 'save': {
+				iframe.contentWindow.postMessage(JSON.stringify({
+					spin: 'Saving',
+					action: 'export',
+					format: 'xmlpng',
+					xml: message.xml,
+				}), 'https://embed.diagrams.net');
+
+				break;
+			}
+
+			case 'load': {
 			// Do nothing for now
-		} else if (message.event === 'exit') {
-			await close();
-		} else {
-			console.error(`Unknown event: ${JSON.stringify(message)}`);
+
+				break;
+			}
+
+			case 'exit': {
+				await close();
+
+				break;
+			}
+
+			default: {
+				console.error(`Unknown event: ${JSON.stringify(message)}`);
+			}
 		}
 	};
 
@@ -177,7 +199,7 @@ async function showImage(data, callback, iframe) {
 // Assume that such links have `deco-|` css class.
 function getAllDrawioImageLinks() {
 	const res = [];
-	for (const node of document.querySelectorAll('.deco-|')) {
+	for (const node of document.getElementsByClassName('deco-|')) {
 		const imageUrl = node.querySelector('img')?.getAttribute('src');
 		if (imageUrl) {
 			res.push(imageUrl);
@@ -187,15 +209,17 @@ function getAllDrawioImageLinks() {
 	return res;
 }
 
-function generateMutationObserver() {
+function generateMutationObserverForEdit() {
 	const mo = new MutationObserver((mutationList, observer) => {
-		// FIXME: it is possible that there are multiple img tags?
 		let imageUrl = null;
 		let modalNode = null;
 		for (const mutation of mutationList) {
 			for (const node of mutation.addedNodes) {
-				imageUrl = node.querySelector('img')?.getAttribute('src');
-				modalNode = node;
+				// console.log(node.id, node.className);
+				if (node.getElementsByTagName('img').length > 0) {
+					imageUrl = node.getElementsByTagName('img')[0].getAttribute('src');
+					modalNode = node;
+				}
 			}
 		}
 
@@ -220,21 +244,38 @@ function generateMutationObserver() {
 	return mo;
 }
 
-const menus = document.querySelectorAll('.page-menu');
-if (menus.length === 1) {
-	// FIXME: add button after scrapbox rendering
-	// FIXME: appearance of button
-	// ref. https://qiita.com/beeeyan/items/0d04b1859943a9a1e92c
-	const btn = document.createElement('button');
-	btn.textContent = 'hello';
-	btn.addEventListener('click', async () => {
-		await drawImage(showImage, null);
-	});
+function generateMutationObserverForCreate() {
+	const mo = new MutationObserver((mutationList, observer) => {
+		// append btn after it
+		let randomJumpButton = null;
+		for (const mutation of mutationList) {
+			for (const node of mutation.addedNodes) {
+				// console.log(node.id, node.className);
+				if (node.className.includes('random-jump-button')) {
+					randomJumpButton = node;
+				}
+			}
+		}
 
-	// FIXME: avoid adding more than one button
-	menus[0].append(btn);
-} else {
-	console.error('Expected only one page-menu');
+		if (randomJumpButton) {
+			const btnId = 'page-menu-create-diagrams';
+			const btn = document.createElement('a');
+			btn.id = btnId;
+			btn.className = 'tool-btn';
+			btn.setAttribute('type', 'button');
+			btn.addEventListener('click', async () => {
+				await drawImage(showImage, null);
+			});
+
+			const icon = document.createElement('i');
+			icon.className = 'kamon kamon-spreadsheet';
+			btn.append(icon);
+
+			randomJumpButton.after(btn);
+		}
+	});
+	return mo;
 }
 
-generateMutationObserver().observe(document.body, {childList: true});
+generateMutationObserverForCreate().observe(document.body, {childList: true, subtree: true});
+generateMutationObserverForEdit().observe(document.body, {childList: true});

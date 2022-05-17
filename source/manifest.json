@@ -12,8 +12,9 @@
 		}
 	},
 	"permissions": [
-		"storage",
-		"https://github.com/fregante/browser-extension-template/*"
+		"https://upload.gyazo.com/*",
+		"https://i.gyazo.com/*",
+		"https://gyazo.com/*"
 	],
 	"content_scripts": [
 		{
