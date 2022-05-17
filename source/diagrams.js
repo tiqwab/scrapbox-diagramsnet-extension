@@ -98,14 +98,15 @@ function insertText(text) {
 	cursor.focus();
 	const start = cursor.selectionStart; // In this case maybe 0
 	cursor.setRangeText(text);
-	cursor.selectionStart = cursor.selectionEnd = start + text.length;
+	cursor.selectionStart = start + text.length;
+	cursor.selectionEnd = start + text.length;
 	const ev = new InputEvent('input', {bubbles: true, cancelable: false});
 	cursor.dispatchEvent(ev);
 }
 
 // Move cursor to the end of the specified line
 // ref. https://scrapbox.io/takker/scrapbox-cursor-jumper
-function moveCursorTo(lineId) {
+function _moveCursorTo(lineId) {
 	const line = document.getElementById(lineId).querySelectorAll('.text')[0];
 	line.scrollTo();
 	const {right, top, height} = line.getBoundingClientRect();
@@ -113,7 +114,7 @@ function moveCursorTo(lineId) {
 	const mouseOptions = {
 		button: 0,
 		clientX: right,
-		clientY: top + height / 2,
+		clientY: top + (height / 2),
 		bubbles: true,
 		cancelable: true,
 		view: window,
@@ -124,9 +125,9 @@ function moveCursorTo(lineId) {
 }
 
 async function fetchGyazoToken() {
-	const res = await fetch('https://scrapbox.io/api/login/gyazo/oauth-upload/token');
+	const result = await fetch('https://scrapbox.io/api/login/gyazo/oauth-upload/token');
 	// FIXME: error handling
-	const data = await res.json();
+	const data = await result.json();
 	return data.token;
 }
 
@@ -143,30 +144,30 @@ async function uploadImage(data) {
 	formData.append('imagedata', data, 'test.png');
 	formData.append('title', 'test');
 
-	const res = await fetch('https://upload.gyazo.com/api/upload', {
+	const result = await fetch('https://upload.gyazo.com/api/upload', {
 		method: 'POST',
 		body: formData,
 		mode: 'cors',
 	});
 	// FIXME: error handling
-	const {permalink_url} = await res.json();
-	return permalink_url;
+	const {permalink_url: permalinkUrl} = await result.json();
+	return permalinkUrl;
 }
 
 // Load an image from Gyazo url.
 // Returns blob.
 async function loadImage(urlString) {
 	const url = new URL(urlString);
-	const res = await fetch(url, {mode: 'cors'});
+	const result = await fetch(url, {mode: 'cors'});
 	// FIXME: error handling
-	return await res.blob();
+	return result.blob();
 }
 
 function base64ToBlob(data, mime) {
 	const bin = atob(data);
 	const buf = new Uint8Array(bin.length);
 	for (let i = 0; i < bin.length; i++) {
-		buf[i] = bin.charCodeAt(i);
+		buf[i] = bin.codePointAt(i);
 	}
 
 	return new Blob([buf.buffer], {type: mime});
@@ -183,7 +184,7 @@ function blobToBase64(blob) {
 }
 
 // Data: string such as `data:image/png;base64,<base64_encoded>`
-async function showImage(data, callback, iframe) {
+async function showImage(data, callback, _iframe) {
 	const startPos = data.indexOf(',') + 1;
 	const imageBase64 = data.slice(Math.max(0, startPos));
 	const imageBlob = base64ToBlob(imageBase64, 'image/png');
@@ -198,26 +199,26 @@ async function showImage(data, callback, iframe) {
 // Get all image links created by draw.io in document.
 // Assume that such links have `deco-|` css class.
 function getAllDrawioImageLinks() {
-	const res = [];
-	for (const node of document.getElementsByClassName('deco-|')) {
+	const result = [];
+	for (const node of document.querySelectorAll('.deco\\-\\|')) {
 		const imageUrl = node.querySelector('img')?.getAttribute('src');
 		if (imageUrl) {
-			res.push(imageUrl);
+			result.push(imageUrl);
 		}
 	}
 
-	return res;
+	return result;
 }
 
 function generateMutationObserverForEdit() {
-	const mo = new MutationObserver((mutationList, observer) => {
+	const mo = new MutationObserver((mutationList, _observer) => {
 		let imageUrl = null;
 		let modalNode = null;
 		for (const mutation of mutationList) {
 			for (const node of mutation.addedNodes) {
 				// console.log(node.id, node.className);
-				if (node.getElementsByTagName('img').length > 0) {
-					imageUrl = node.getElementsByTagName('img')[0].getAttribute('src');
+				if (node.querySelectorAll('img').length > 0) {
+					imageUrl = node.querySelectorAll('img')[0].getAttribute('src');
 					modalNode = node;
 				}
 			}
@@ -245,8 +246,8 @@ function generateMutationObserverForEdit() {
 }
 
 function generateMutationObserverForCreate() {
-	const mo = new MutationObserver((mutationList, observer) => {
-		// append btn after it
+	const mo = new MutationObserver((mutationList, _observer) => {
+		// Append btn after it
 		let randomJumpButton = null;
 		for (const mutation of mutationList) {
 			for (const node of mutation.addedNodes) {

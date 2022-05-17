@@ -21,9 +21,12 @@
 			"no-unused-vars": [
 				"error",
 				{
-					"varsIgnorePattern": "browser"
+					"varsIgnorePattern": "^_",
+					"argsIgnorePattern": "^_",
+					"destructuredArrayIgnorePattern": "^_"
 				}
-			]
+			],
+			"capitalized-comments": "off"
 		}
 	},
 	"stylelint": {
