@@ -1,18 +1,15 @@
 {
-	"name": "Awesome Extension",
+	"name": "scrapbox-diagramsnet-extension",
 	"version": "0.0.0",
-	"description": "An awesome new browser extension",
-	"homepage_url": "https://github.com/fregante/browser-extension-template",
+	"description": "Web browser extension to integrate Diagrams.net (Draw.io) editor with Scrapbox",
+	"homepage_url": "https://github.com/tiqwab/scrapbox-diagramsnet-extension",
 	"manifest_version": 2,
 	"minimum_chrome_version": "80",
 	"browser_specific_settings": {
 		"gecko": {
-			"id": "awesome-extension@notlmn.github.io",
+			"id": "scrapbox-diagramsnet-extension@tiqwab.com",
 			"strict_min_version": "80.0"
 		}
-	},
-	"icons": {
-		"128": "icon.png"
 	},
 	"permissions": [
 		"storage",
@@ -20,20 +17,8 @@
 	],
 	"content_scripts": [
 		{
-			"matches": [ "https://github.com/fregante/browser-extension-template/*" ],
-			"js": [ "content.js" ],
-			"css": [ "content.css" ],
-			"run_at": "document_end"
+			"matches": ["*://scrapbox.io/*"],
+			"js": ["diagrams.js"]
 		}
-	],
-	"options_ui": {
-		"browser_style": true,
-		"page": "options.html"
-	},
-	"background": {
-		"persistent": false,
-		"scripts": [
-			"background.js"
-		]
-	}
+	]
 }
