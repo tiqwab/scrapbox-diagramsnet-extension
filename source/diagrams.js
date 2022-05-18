@@ -1,4 +1,4 @@
-import {fetchGyazoImage, uploadImageToGyazo} from './api.js';
+import {fetchGyazoImage, uploadImageToGyazo} from './client.js';
 
 // Open embeded draw.io and edit diagram, then export Base64-encoded data as png.
 // callback: function which accepts exported data
@@ -126,35 +126,14 @@ function _moveCursorTo(lineId) {
 	line.dispatchEvent(new MouseEvent('mouseup', mouseOptions));
 }
 
-function base64ToBlob(data, mime) {
-	const bin = atob(data);
-	const buf = new Uint8Array(bin.length);
-	for (let i = 0; i < bin.length; i++) {
-		buf[i] = bin.codePointAt(i);
-	}
-
-	return new Blob([buf.buffer], {type: mime});
-}
-
-function blobToBase64(blob) {
-	return new Promise((resolve, _) => {
-		const reader = new FileReader();
-		reader.addEventListener('load', () => {
-			resolve(reader.result);
-		});
-		reader.readAsDataURL(blob);
-	});
-}
-
 // Data: string such as `data:image/png;base64,<base64_encoded>`
 async function showImage(data, callback, _iframe) {
 	try {
 		const startPos = data.indexOf(',') + 1;
 		const imageBase64 = data.slice(Math.max(0, startPos));
-		const imageBlob = base64ToBlob(imageBase64, 'image/png');
 		const title = document.title;
 		const refererUrl = document.URL;
-		const imageUrl = await uploadImageToGyazo(imageBlob, refererUrl, title);
+		const imageUrl = await uploadImageToGyazo(imageBase64, refererUrl, title);
 
 		// This will add `deco-|` class
 		insertText(`[| [${imageUrl}]]`);
@@ -178,21 +157,6 @@ function getAllDrawioImageLinks() {
 	}
 
 	return result;
-}
-
-// The original url returns redirect without CORS headers,
-// which causes error in Google Chrome.
-function processImageUrl(original) {
-	const url = new URL(original);
-	if (url.host === 'gyazo.com') {
-		url.host = 'i.gyazo.com';
-
-		// assume pathname is `/<file>/max_size/1000`
-		const path = url.pathname;
-		url.pathname = `/${path.split('/')[1]}.png`;
-	}
-
-	return url.toString();
 }
 
 function generateMutationObserverForEdit() {
@@ -219,8 +183,7 @@ function generateMutationObserverForEdit() {
 				btn.type = 'draw';
 				btn.style = 'margin-left: 1em';
 				btn.addEventListener('click', async () => {
-					const imageBlob = await fetchGyazoImage(processImageUrl(imageUrl));
-					const imageBase64 = await blobToBase64(imageBlob);
+					const imageBase64 = await fetchGyazoImage(imageUrl);
 					await drawImage(showImage, imageBase64);
 				});
 				toolbar.append(btn);
