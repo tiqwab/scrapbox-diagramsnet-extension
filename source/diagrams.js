@@ -180,6 +180,21 @@ function getAllDrawioImageLinks() {
 	return result;
 }
 
+// The original url returns redirect without CORS headers,
+// which causes error in Google Chrome.
+function processImageUrl(original) {
+	const url = new URL(original);
+	if (url.host === 'gyazo.com') {
+		url.host = 'i.gyazo.com';
+
+		// assume pathname is `/<file>/max_size/1000`
+		const path = url.pathname;
+		url.pathname = `/${path.split('/')[1]}.png`;
+	}
+
+	return url.toString();
+}
+
 function generateMutationObserverForEdit() {
 	const mo = new MutationObserver((mutationList, _observer) => {
 		let imageUrl = null;
@@ -204,7 +219,7 @@ function generateMutationObserverForEdit() {
 				btn.type = 'draw';
 				btn.style = 'margin-left: 1em';
 				btn.addEventListener('click', async () => {
-					const imageBlob = await fetchGyazoImage(imageUrl);
+					const imageBlob = await fetchGyazoImage(processImageUrl(imageUrl));
 					const imageBase64 = await blobToBase64(imageBlob);
 					await drawImage(showImage, imageBase64);
 				});

@@ -1,5 +1,7 @@
-async function get(url) {
-	const result = await fetch(url, {mode: 'cors'});
+async function get(url, options) {
+	const defaultOptions = {mode: 'cors'};
+	options = options || defaultOptions;
+	const result = await fetch(url, options);
 	if (!result.ok) {
 		const content = await result.text();
 		throw new Error(`Error occurred in GET ${url}: ${content}`);
@@ -8,13 +10,13 @@ async function get(url) {
 	return result;
 }
 
-async function getAsJson(url) {
-	const result = await get(url);
+async function getAsJson(url, options) {
+	const result = await get(url, options);
 	return result.json();
 }
 
-async function getAsBlob(url) {
-	const result = await get(url);
+async function getAsBlob(url, options) {
+	const result = await get(url, options);
 	return result.blob();
 }
 
@@ -41,7 +43,7 @@ async function fetchGyazoToken() {
 
 // Get an image from Gyazo url as Blob.
 async function fetchGyazoImage(url) {
-	return getAsBlob(url);
+	return getAsBlob(url, {mode: 'cors', headers: {Accept: 'image/png'}});
 }
 
 // Upload an image to Gyazo.
