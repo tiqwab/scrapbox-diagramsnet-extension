@@ -1,3 +1,5 @@
+import {fetchGyazoImage, uploadImageToGyazo} from './api.js';
+
 // Open embeded draw.io and edit diagram, then export Base64-encoded data as png.
 // callback: function which accepts exported data
 // data: PNG data URI with base64 encoding ('data:image/png;base64,...')
@@ -124,45 +126,6 @@ function _moveCursorTo(lineId) {
 	line.dispatchEvent(new MouseEvent('mouseup', mouseOptions));
 }
 
-async function fetchGyazoToken() {
-	const result = await fetch('https://scrapbox.io/api/login/gyazo/oauth-upload/token');
-	// FIXME: error handling
-	const data = await result.json();
-	return data.token;
-}
-
-// Upload an image to Gyazo.
-// ref. https://gyazo.com/api/docs/image#upload
-// data: Blob data of png
-async function uploadImage(data) {
-	// FIXME: reuse OAuth token?
-	const gyazoToken = await fetchGyazoToken();
-
-	// FIXME: title is necessary?
-	const formData = new FormData();
-	formData.append('access_token', gyazoToken);
-	formData.append('imagedata', data, 'test.png');
-	formData.append('title', 'test');
-
-	const result = await fetch('https://upload.gyazo.com/api/upload', {
-		method: 'POST',
-		body: formData,
-		mode: 'cors',
-	});
-	// FIXME: error handling
-	const {permalink_url: permalinkUrl} = await result.json();
-	return permalinkUrl;
-}
-
-// Load an image from Gyazo url.
-// Returns blob.
-async function loadImage(urlString) {
-	const url = new URL(urlString);
-	const result = await fetch(url, {mode: 'cors'});
-	// FIXME: error handling
-	return result.blob();
-}
-
 function base64ToBlob(data, mime) {
 	const bin = atob(data);
 	const buf = new Uint8Array(bin.length);
@@ -185,15 +148,20 @@ function blobToBase64(blob) {
 
 // Data: string such as `data:image/png;base64,<base64_encoded>`
 async function showImage(data, callback, _iframe) {
-	const startPos = data.indexOf(',') + 1;
-	const imageBase64 = data.slice(Math.max(0, startPos));
-	const imageBlob = base64ToBlob(imageBase64, 'image/png');
-	const imageUrl = await uploadImage(imageBlob);
+	try {
+		const startPos = data.indexOf(',') + 1;
+		const imageBase64 = data.slice(Math.max(0, startPos));
+		const imageBlob = base64ToBlob(imageBase64, 'image/png');
+		const imageUrl = await uploadImageToGyazo(imageBlob);
 
-	// This will add `deco-|` class
-	insertText(`[| [${imageUrl}]]`);
+		// This will add `deco-|` class
+		insertText(`[| [${imageUrl}]]`);
 
-	callback(true);
+		callback(true);
+	} catch (error) {
+		console.error(`Error occurred in showImage: ${error}`);
+		callback(false);
+	}
 }
 
 // Get all image links created by draw.io in document.
@@ -234,7 +202,7 @@ function generateMutationObserverForEdit() {
 				btn.type = 'draw';
 				btn.style = 'margin-left: 1em';
 				btn.addEventListener('click', async () => {
-					const imageBlob = await loadImage(imageUrl);
+					const imageBlob = await fetchGyazoImage(imageUrl);
 					const imageBase64 = await blobToBase64(imageBlob);
 					await drawImage(showImage, imageBase64);
 				});

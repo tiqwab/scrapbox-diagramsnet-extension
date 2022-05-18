@@ -26,7 +26,8 @@
 					"destructuredArrayIgnorePattern": "^_"
 				}
 			],
-			"capitalized-comments": "off"
+			"capitalized-comments": "off",
+			"unicorn/prefer-query-selector": "off"
 		}
 	},
 	"stylelint": {
