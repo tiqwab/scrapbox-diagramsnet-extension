@@ -152,7 +152,9 @@ async function showImage(data, callback, _iframe) {
 		const startPos = data.indexOf(',') + 1;
 		const imageBase64 = data.slice(Math.max(0, startPos));
 		const imageBlob = base64ToBlob(imageBase64, 'image/png');
-		const imageUrl = await uploadImageToGyazo(imageBlob);
+		const title = document.title;
+		const refererUrl = document.URL;
+		const imageUrl = await uploadImageToGyazo(imageBlob, refererUrl, title);
 
 		// This will add `deco-|` class
 		insertText(`[| [${imageUrl}]]`);

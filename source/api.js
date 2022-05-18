@@ -47,12 +47,16 @@ async function fetchGyazoImage(url) {
 // Upload an image to Gyazo.
 // ref. https://gyazo.com/api/docs/image#upload
 // data: Blob data of png
-async function uploadImageToGyazo(data) {
+// refererUrl: Page URL where the image is used
+// title: Page title where the image is used
+async function uploadImageToGyazo(data, refererUrl, title) {
 	const gyazoToken = await fetchGyazoToken();
 
 	const formData = new FormData();
 	formData.append('access_token', gyazoToken);
 	formData.append('imagedata', data, 'blob');
+	formData.append('referer_url', refererUrl);
+	formData.append('title', title);
 
 	const result = await post('https://upload.gyazo.com/api/upload', formData, {});
 	const {permalink_url: permalinkUrl} = await result.json();
