@@ -1,13 +1,13 @@
 {
 	"name": "scrapbox-diagramsnet-extension",
-	"version": "0.0.0",
+	"version": "0.0.1",
 	"description": "Web browser extension to integrate Diagrams.net (Draw.io) editor with Scrapbox",
 	"homepage_url": "https://github.com/tiqwab/scrapbox-diagramsnet-extension",
 	"manifest_version": 2,
 	"minimum_chrome_version": "80",
 	"browser_specific_settings": {
 		"gecko": {
-			"id": "scrapbox-diagramsnet-extension@tiqwab.com",
+			"id": "313f6a66-0678-4416-b6df-6714d43c24d9",
 			"strict_min_version": "80.0"
 		}
 	},
