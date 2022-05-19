@@ -16,3 +16,17 @@ https://user-images.githubusercontent.com/11240297/169002527-49601dcf-7c7f-4db3-
 ## Install
 
 (not yet prepared)
+
+## Build and package
+
+```
+# Generate artifacts in distribution/
+$ npm run build
+
+# Generate an extension package (zip) in web-ext-artifacts/
+$ npm run package
+```
+
+## Release
+
+Upload extension package manually or run release workflow with version tag.
