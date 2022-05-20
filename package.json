@@ -8,7 +8,8 @@
 		"lint:css": "stylelint --allow-empty-input source/**/*.css",
 		"lint:js": "xo",
 		"test": "run-p lint:* build",
-		"watch": "parcel watch source/manifest.json --dist-dir distribution --no-cache --no-hmr"
+		"watch": "parcel watch source/manifest.json --dist-dir distribution --no-cache --no-hmr",
+		"clean": "rm -f distribution/* web-ext-artifacts/*"
 	},
 	"browserslist": [
 		"last 1 Chrome version",
