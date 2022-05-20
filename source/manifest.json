@@ -7,7 +7,7 @@
 	"minimum_chrome_version": "80",
 	"browser_specific_settings": {
 		"gecko": {
-			"id": "313f6a66-0678-4416-b6df-6714d43c24d9",
+			"id": "{313f6a66-0678-4416-b6df-6714d43c24d9}",
 			"strict_min_version": "80.0"
 		}
 	},
