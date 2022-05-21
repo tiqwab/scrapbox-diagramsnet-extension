@@ -15,7 +15,8 @@ https://user-images.githubusercontent.com/11240297/169002527-49601dcf-7c7f-4db3-
 
 ## Install
 
-(not yet prepared)
+- [for Firefox](https://addons.mozilla.org/en-US/firefox/addon/scrapbox-diagramsnet-extension/)
+- for Google Chrome (not yet prepared)
 
 ## Build and package
 
