@@ -21,6 +21,8 @@ https://user-images.githubusercontent.com/11240297/169002527-49601dcf-7c7f-4db3-
 ## Build and package
 
 ```
+$ npm ci
+
 # Generate artifacts in distribution/
 $ npm run build
 
